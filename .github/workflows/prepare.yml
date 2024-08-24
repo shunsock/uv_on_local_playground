@@ -1,0 +1,37 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: yezz123/setup-uv@v4
+
+      - name: Check uv version
+        run: uv --version
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run linter
+        run: uvx ruff@latest check . --fix --exit-non-zero-on-fix --diff
+        continue-on-error: true
+
+      - name: Run type checker
+        run: uvx mypy@latest ./src/app --strict
+
+      - name: Run tests
+        run: uv run pytest src/tests
